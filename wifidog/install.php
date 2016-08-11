@@ -327,66 +327,21 @@ function saveConfig($data) {
 
     global $CONFIG_FILE;
 
-    $contentArray = file(WIFIDOG_ABS_FILE_PATH . "$CONFIG_FILE");
-    $fd = fopen(WIFIDOG_ABS_FILE_PATH . "$CONFIG_FILE", 'w');
-
-    $defineArrayToken = array ();
     $defineArrayToken = explode('|', $data);
-
+    $configFile = WIFIDOG_ABS_FILE_PATH . "$CONFIG_FILE";
+    $content = file_get_contents($configFile);
+    $pattern= array();
+    $replacement= array();
     foreach ($defineArrayToken as $nameValue) {
         list ($name, $value) = explode('=', $nameValue);
-        $defineArray[$name] = $value; # New define value ($name and value)
-        #print "K=$name V=$value<BR>"; # DEBUG
+        $name=trim($name,'"\'');
+        $value=trim($value,'"\'');
+        $pattern[]="/define\\(['\"]{$name}['\"],(.+)\\)/";
+        $replacement[]="define('{$name}','{$value}')";
     }
+    $content= preg_replace($pattern, $replacement, $content);
+    file_put_contents($configFile,$content);
 
-    foreach ($contentArray as $line) {
-        #print "L=$line<BR>\n";
-        // maybe more than one define stentences
-        $may_be_more_than_one_define_sentences = explode(";", $line );
-        
-        foreach($may_be_more_than_one_define_sentences as $line){
-            // remove possible existed blanks
-            $no_more_blanks_line = trim($line);
-            $line = $no_more_blanks_line . ";";
-            
-            if (preg_match("/^define\((.+)\);/", $line, $matchesArray)) {
-            	list ($key, $value) = explode(',', $matchesArray[1]);
-            	$pattern = array (
-                    "/^'/",
-                    "/'$/"
-                );
-            	$replacement = array (
-                    '',
-                    ''
-                );
-                $key = preg_replace($pattern, $replacement, trim($key));
-                //$value = preg_replace($pattern, $replacement, trim($value));
-
-                if (array_key_exists($key, $defineArray)) { // A new value is defined
-                    #print "$key EXISTS<BR>";
-                    #print "define => (" . $defineArray[$key] . ")<BR>";
-                    $pattern = array (
-                    "/^\\\'/",
-                    "/\\\'$/"
-                    );
-                    $replacement = array (
-                    "'",
-                    "'"
-                    );
-                    $value = preg_replace($pattern, $replacement, trim($defineArray[$key]));
-                    #print "(define('$key', $value);)<BR>";
-                    fwrite($fd, "define('$key', $value);\n"); # Write the new define($name, $value)
-                }
-                else { // The key does not exist (no new value to be saved)
-                    fwrite($fd, $line); # Write the same line in config.php
-                }
-            }else {
-                fwrite($fd, $line); # Write the line (not a define line). Ex: Commented text
-            }
-        }
-        
-       
-    }
 }
 
 
