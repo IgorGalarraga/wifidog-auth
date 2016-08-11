@@ -800,7 +800,7 @@ EndHTML;
         empty ($_REQUEST['username']) ? $username = 'admin' : $username = $_REQUEST['username'];
         empty ($_REQUEST['password']) ? $password = '' : $password = $_REQUEST['password'];
         empty ($_REQUEST['password2']) ? $password2 = '' : $password2 = $_REQUEST['password2'];
-        empty ($_REQUEST['email']) ? $email = $_SERVER['SERVER_ADMIN'] : $email = $_REQUEST['email'];
+        empty ($_REQUEST['email']) ? $email = '' : $email = $_REQUEST['email'];
 
         $conn_string = "host=$CONF_DATABASE_HOST port=$CONF_DATABASE_PORT dbname=$CONF_DATABASE_NAME user=$CONF_DATABASE_USER password=$CONF_DATABASE_PASSWORD";
         $connection = pg_connect($conn_string) or die();
